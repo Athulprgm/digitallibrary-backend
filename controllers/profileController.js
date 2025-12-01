@@ -1,10 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 
-
-// =============================
-// CHANGE PASSWORD
-// =============================
 exports.changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -14,8 +10,7 @@ exports.changePassword = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
 
     const user = await User.findById(userId);
-    if (!user)
-      return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match)
@@ -27,31 +22,60 @@ exports.changePassword = async (req, res) => {
     await user.save();
 
     res.json({ message: "Password changed successfully" });
-
   } catch (error) {
     console.error("Change Password Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-
 exports.getProfile = async (req, res) => {
-  const user = await User.findById(req.user.id).select("-password");
-  res.json(user);
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Get Profile Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 exports.updateProfile = async (req, res) => {
-  const user = await User.findByIdAndUpdate(req.user.id, req.body, { new: true }).select("-password");
-  res.json(user);
+  try {
+    const user = await User.findByIdAndUpdate(req.user.id, req.body, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 exports.uploadPhoto = async (req, res) => {
-  const photoPath = `/uploads/${req.file.filename}`;
-  const user = await User.findByIdAndUpdate(
-    req.user.id,
-    { photo: photoPath },
-    { new: true }
-  ).select("-password");
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const photoPath = `/uploads/${req.file.filename}`;
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { photo: photoPath },
+      { new: true }
+    ).select("-password");
 
-  res.json({ message: "Photo updated", photo: photoPath, user });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "Photo updated", photo: photoPath, user });
+  } catch (error) {
+    console.error("Upload Photo Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };

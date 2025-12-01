@@ -12,10 +12,14 @@ const RequestSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    message: {
+      type: String,
+      default: "",
+    },
     status: {
       type: String,
       default: "Pending",
-      enum: ["Pending", "Approved", "Rejected"],
+      enum: ["Pending", "Accepted", "Rejected", "Returned"],
     },
   },
   { timestamps: true }

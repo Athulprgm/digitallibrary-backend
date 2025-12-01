@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+
 const {
   getRequests,
   createRequest,
@@ -11,16 +12,16 @@ const {
 // CREATE request
 router.post("/", createRequest);
 
+// RETURN book (specific route before generic :id)
+router.put("/return/:id", returnBook);
+
 // ACCEPT request
 router.put("/:id/accept", acceptRequest);
 
 // REJECT request
 router.put("/:id/reject", rejectRequest);
 
-// RETURN book
-router.put("/return/:id", returnBook);
-
-// GET requests (must be LAST because it's a dynamic route)
+// GET requests (keep last to avoid conflicts)
 router.get("/:id", getRequests);
 
 module.exports = router;

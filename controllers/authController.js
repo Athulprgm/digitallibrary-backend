@@ -33,7 +33,9 @@ exports.registerUser = async (req, res) => {
     });
 
     if (existingUser)
-      return res.status(400).json({ message: "Email or username already exists" });
+      return res
+        .status(400)
+        .json({ message: "Email or username already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -67,18 +69,18 @@ exports.loginUser = async (req, res) => {
     const { emailOrUsername, password } = req.body;
 
     if (!emailOrUsername || !password)
-      return res.status(400).json({ message: "Email/Username and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email/Username and password are required" });
 
     const user = await User.findOne({
       $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
     });
 
-    if (!user)
-      return res.status(400).json({ message: "User not found" });
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!match) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, email: user.email },
@@ -114,10 +116,9 @@ exports.forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ username });
 
-    if (!user)
-      return res.status(400).json({ message: "User not found" });
+    if (!user) return res.status(400).json({ message: "User not found" });
 
-    // Generate token
+    
     const token = crypto.randomBytes(32).toString("hex");
 
     user.resetPasswordToken = token;
@@ -138,8 +139,10 @@ exports.forgotPassword = async (req, res) => {
       `,
     });
 
-    res.json({ message: "Password reset email sent to the email linked with this username" });
-
+    res.json({
+      message:
+        "Password reset email sent to the email linked with this username",
+    });
   } catch (error) {
     console.error("Forgot Password Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -174,7 +177,6 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     res.json({ message: "Password reset successful" });
-
   } catch (error) {
     console.error("Reset Password Error:", error);
     res.status(500).json({ message: "Internal Server Error" });

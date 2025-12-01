@@ -1,6 +1,7 @@
 const Request = require("../models/Request");
 const Book = require("../models/Book");
 const nodemailer = require("nodemailer");
+const path = require("path");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -74,8 +75,9 @@ exports.createRequest = async (req, res) => {
 
     await Book.findByIdAndUpdate(bookId, { status: "Pending" });
 
-    const imagePath = `${process.cwd()}/${book.image}`;
     try {
+      const imagePath = path.join(process.cwd(), book.image);
+      const fileExt = path.extname(book.image) || ".jpg";
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: book.userId.email, // owner
@@ -86,7 +88,7 @@ exports.createRequest = async (req, res) => {
 
           <h3>${book.title}</h3>
 
-         
+          ${message ? `<p><strong>Message:</strong> ${message}</p>` : ""}
 
           <p>Please open your dashboard to accept or reject the request.</p>
           <img src="cid:bookImage" style="width:200px;border-radius:10px;" />
@@ -95,7 +97,7 @@ exports.createRequest = async (req, res) => {
         `,
         attachments: [
           {
-            filename: `${book.title}.jpg`,
+            filename: `${book.title}${fileExt}`,
             path: imagePath,
             cid: "bookImage",
           },
@@ -133,9 +135,9 @@ exports.acceptRequest = async (req, res) => {
     const borrower = request.userId;
     const book = request.bookId;
 
-    const imagePath = `${process.cwd()}/${book.image}`;
-
     try {
+      const imagePath = path.join(process.cwd(), book.image);
+      const fileExt = path.extname(book.image) || ".jpg";
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: borrower.email,
@@ -153,7 +155,7 @@ exports.acceptRequest = async (req, res) => {
         `,
         attachments: [
           {
-            filename: `${book.title}.jpg`,
+            filename: `${book.title}${fileExt}`,
             path: imagePath,
             cid: "bookImage",
           },

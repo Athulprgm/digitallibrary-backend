@@ -12,10 +12,11 @@ module.exports = (req, res, next) => {
   console.log("Token:", token.substring(0, 20) + "..."); // Debug log
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "defaultsecret");
     console.log("Decoded user:", decoded); // Debug log
-    req.user = decoded;
+    req.user = { id: decoded.id };
     next();
+
   } catch (err) {
     console.log("Token verification error:", err.message); // Debug log
     res.status(401).json({ message: "Invalid token" });
